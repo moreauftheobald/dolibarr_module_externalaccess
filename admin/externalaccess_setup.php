@@ -208,8 +208,7 @@ if (!empty($conf->global->EACCESS_ACTIVATE_OR)){
 	$sql = 'SELECT rowid, label';
 	$sql .= ' FROM '.MAIN_DB_PREFIX.'c_operationorder_type';
 	$resql = $db->query($sql);
-	//print_r($resql);
-	//exit;
+
 	if ($resql){
 		while ($typelist = $db->fetch_object($resql)){
 			$TAvailableType [$typelist->rowid] = $typelist->label;

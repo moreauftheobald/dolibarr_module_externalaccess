@@ -10,44 +10,58 @@ function print_ticketTable($socId = 0)
 
 	$langs->load('ticket');
 
-	$sql = 'SELECT rowid ';
-	$sql.= ' FROM `'.MAIN_DB_PREFIX.'ticket` t';
-	$sql.= ' WHERE fk_soc = '. intval($socId);
+	$sql = 'SELECT t.rowid as rowid';
+	$sql.= ' FROM `'.MAIN_DB_PREFIX.'ticket` as t';
+	$sql.= ' WHERE t.fk_soc = '. intval($socId);
 	$sql.= ' ORDER BY t.datec DESC';
 	$tableItems = $context->dbTool->executeS($sql);
+	
+	
 
 	print '<div><a href="'.$context->getRootUrl('ticket_card', '&action=create').'" class="btn btn-primary btn-strong pull-right" >'.$langs->trans('NewTicket').'</a></div>';
 
 
 	if(!empty($tableItems))
 	{
+		$extrafields = new ExtraFields($db);
+		$object = new Ticket($db);
+		$tickets = $extrafields->fetch_name_optionals_label('ticket');
+		
 		print '<table id="ticket-list" class="table table-striped" >';
-		print '<thead>';
-		print '<tr>';
-		print ' <th class="text-center" >'.$langs->trans('Ref').'</th>';
-		print ' <th class="text-center" >'.$langs->trans('Date').'</th>';
-		print ' <th class="text-center" >'.$langs->trans('Subject').'</th>';
-		print ' <th class="text-center" >'.$langs->trans('Type').'</th>';
-		print ' <th class="text-center" >'.$langs->trans('TicketSeverity').'</th>';
-		print ' <th class="text-center" >'.$langs->trans('Status').'</th>';
-		print '</tr>';
-		print '</thead>';
-		print '<tbody>';
-		foreach ($tableItems as $item)
-		{
-			$object = new Ticket($db);
-			$object->fetch($item->rowid);
-
-			print '<tr>';
-			print ' <td data-search="'.$object->ref.'" data-order="'.$object->ref.'"  ><a href="'.$context->getRootUrl('ticket_card', '&id='.$item->rowid).'">'.$object->ref.'</a></td>';
-			print ' <td data-search="'.dol_print_date($object->datec).'" data-order="'.$object->datec.'" >'.dol_print_date($object->datec).'</td>';
-			print ' <td data-search="'.$object->subject.'" data-order="'.$object->subject.'" >'.$object->subject.'</td>';
-			print ' <td data-search="'.$object->type_label.'" data-order="'.$object->type_label.'" >'.$object->type_label.'</td>';
-			print ' <td data-search="'.$object->severity_label.'" data-order="'.$object->severity_label.'" >'.$object->severity_label.'</td>';
-			print ' <td class="text-center" >'.$object->getLibStatut(1).'</td>';
-			print '</tr>';
-		}
-		print '</tbody>';
+			print '<thead>';
+				print '<tr>';
+				print ' <th class="text-center" >'.$langs->trans('Ref').'</th>';
+				print ' <th class="text-center" >'.$langs->trans('Date').'</th>';
+				print ' <th class="text-center" >'.$langs->trans('Subject').'</th>';
+				print ' <th class="text-center" >'.$langs->trans('Type').'</th>';
+				print ' <th class="text-center" >'.$langs->trans('TicketSeverity').'</th>';
+				print ' <th class="text-center" >'.$langs->trans('Status').'</th>';
+				foreach ($tickets as $key=>$label){
+					print ' <th class="text-center" >'.$langs->trans($label).'</th>';
+				}
+				print '</tr>';
+			print '</thead>';
+			
+			print '<tbody>';					
+				foreach ($tableItems as $item)
+				{
+					$object->fetch($item->rowid);										
+					print '<tr>';
+					print ' <td data-search="'.$object->ref.'" data-order="'.$object->ref.'"  ><a href="'.$context->getRootUrl('ticket_card', '&id='.$item->rowid).'">'.$object->ref.'</a></td>';
+					print ' <td data-search="'.dol_print_date($object->datec).'" data-order="'.$object->datec.'" >'.dol_print_date($object->datec).'</td>';
+					print ' <td data-search="'.$object->subject.'" data-order="'.$object->subject.'" >'.$object->subject.'</td>';
+					print ' <td data-search="'.$object->type_label.'" data-order="'.$object->type_label.'" >'.$object->type_label.'</td>';
+					print ' <td data-search="'.$object->severity_label.'" data-order="'.$object->severity_label.'" >'.$object->severity_label.'</td>';
+					print ' <td class="text-center" >'.$object->getLibStatut(1).'</td>';			
+					foreach ($tickets as $key=>$label){
+						print ' <td data-search="'.$label.'" data-order="'.$label.'" >';		
+						print $extrafields->showOutputField($key, $object->array_options['options_'.$key]);
+						print '</td>';
+					}
+					print '</tr>';
+				}
+			
+			print '</tbody>';
 		print '</table>';
 		?>
 		<script type="text/javascript" >
@@ -96,7 +110,9 @@ function print_ticketCard_form($ticketId = 0, $socId = 0, $action = '')
 
 	dol_include_once('ticket/class/ticket.class.php');
 	dol_include_once('user/class/user.class.php');
-
+	dol_include_once('core/class/html.formticket.class.php');
+	dol_include_once('ticket/class/ticket.class.php');
+	dol_include_once('core/class/html.form.class.php');
 
 	/** @var Ticket $object */
 	$object = new Ticket($db);
@@ -114,48 +130,96 @@ function print_ticketCard_form($ticketId = 0, $socId = 0, $action = '')
 
 	$out .= '<form role="form" autocomplete="off" class="form" method="post"  action="'.$context->getRootUrl('ticket_card').'" >';
 
-	if($object->id > 0){
-		$out.= '<input type="hidden" name="track_id" value="'.$object->track_id.'" />';
-		$out.= '<input type="hidden" name="id" value="'.$object->id.'" />';
-	}
+		if($object->id > 0){
+			$out.= '<input type="hidden" name="track_id" value="'.$object->track_id.'" />';
+			$out.= '<input type="hidden" name="id" value="'.$object->id.'" />';
+		}
 
-	$out .= '<div class="form-ticket-message-container" >';
-	$out .= '<div class="form-group">
-				<label for="ticket-subject">'.$langs->transnoentities('TicketSubject').'</label>
-				<input required type="text" name="subject" class="form-control" id="ticket-subject" aria-describedby="ticket-subject-help" placeholder="'.$langs->transnoentities('TicketSubjectHere').'" maxlength="200">
-				<small id="ticket-subject-help" class="form-text text-muted">'.$langs->transnoentities('TicketSubjectHelp').'</small>
-			</div>';
+		
 
+<<<<<<< HEAD
 	$out .= '<div class="form-group">
 				<label for="ticket-type-code">'.$langs->transnoentities('TicketTypeCode').'</label>';
 	$out .=  $formticket->selectTypesTickets($object->type_code, 'ticket-type-code', '', 2, 1, 1, 0, 'form-control');
 	$out .=  '<small id="ticket-subject-help" class="form-text text-muted">'.$langs->transnoentities('TicketSubjectHelp').'</small>
 			</div>';
+=======
+		$out .= '<div class="form-ticket-message-container" >';
+		
+			//Sujet libre
+			$out .= '<div class="form-group">';
+				$out .=	'<label for="ticket-subject">'.$langs->transnoentities('TicketSubject').'</label>';
+				$out .=	'<input required type="text" name="subject" class="form-control" id="ticket-subject" aria-describedby="ticket-subject-help" placeholder="'.$langs->transnoentities('TicketSubjectHere').'" maxlength="200">';
+				$out .=	'<small id="ticket-subject-help" class="form-text text-muted">'.$langs->transnoentities('TicketSubjectHelp').'</small>';
+			$out .=	'</div>';
+>>>>>>> refs/remotes/origin/master
 
-	$out .=  '<div class="form-group">
-				<label for="ticket-message">'.$langs->transnoentities('TicketMessage').'</label>
-				<textarea required name="message" class="form-control" id="ticket-message" rows="10">'.dol_htmlentities($object->message).'</textarea>
-			</div>
-	';
 
-	if (!empty($conf->global->FCKEDITOR_ENABLE_TICKET)){
-		$out .= '<script>CKEDITOR.replace( "message" );</script>';
-	}
+			//Type de tickets - menu déroulant
+			$sql = 'SELECT code, label  ';
+			$sql.= ' FROM `'.MAIN_DB_PREFIX.'c_ticket_type`';
+			$sql.= ' WHERE active = "1"';
+			$tableItems = $context->dbTool->executeS($sql);			
+			if(!empty($tableItems)){
+				$form = new Form($db);					
+				$array = array();
+				foreach ($tableItems as $code => $label){
+					$array [$label->code] = $label->label;
+				}		
+				$out .= '<div class="form-group">';
+					$out .= '<label for="type_code">'.$langs->transnoentities('TicketTypeCode').'</label>';
+					$out .=  $form->selectarray('type_code', $array, GETPOST('type_code'), 0, 0, 0, '', 0, 0, 0, '', '',0);
+				$out .= '</div>';
+			}
+			
+			//Sévérité - Menu déroulant
+			$sql = 'SELECT code, label  ';
+			$sql.= ' FROM `'.MAIN_DB_PREFIX.'c_ticket_severity`';
+			$sql.= ' WHERE active = "1"';
+			$tableItems = $context->dbTool->executeS($sql);		
+			if(!empty($tableItems)){
+				$form = new Form($db);					
+				$array = array();
+				foreach ($tableItems as $code => $label){
+					$array [$label->code] = $label->label;
+				}
+				$out .= '<div class="form-group">';
+					$out .= '<label for="severity_code">'.$langs->transnoentities('Severity').'</label>';
+					$out .=  $form->selectarray('severity_code', $array, GETPOST('severity_code'), 0, 0, 0, '', 0, 0, 0, '', '',0);
+				$out .= '</div>';
+			}	
 
-	$out .=  '<div class="form-btn-action-container">';
-	if($object->id > 0 ){
-		$out .=  '<button type="submit" class="btn btn-success btn-strong pull-right" name="action" value="save" >'.$langs->transnoentities('TicketBtnSubmitSave').'</button>';
-	}
-	else{
-		$out .=  '<button type="submit" class="btn btn-success btn-strong pull-right" name="action" value="savecreate"  >'.$langs->transnoentities('TicketBtnSubmitCreate').'</button>';
-	}
-
-	$out .= '
-			</div>
-		</div>
-	</form>
-	';
-
+			//Extrafield concernantles tickets à récupérer avec menu déroulant: véhicule, Atelier, Daté début, date fin
+			$extrafields = new ExtraFields($db);
+			$tickets = $extrafields->fetch_name_optionals_label('ticket');
+			foreach ($tickets as $key=>$label){				
+				$out .= '<div class="form-group">';	
+				$out .= '<label for="'.$label.'">'.$label.'</label>';				
+				$out .=$extrafields->showInputField($key, $extrafiled->array_options['options_'.$key]);
+				$out .= '</div>';
+			}
+			
+			//Description libre 
+			$out .=  '<div class="form-group">';
+				$out .=  '<label for="ticket-message">'.$langs->transnoentities('TicketMessage').'</label>';
+				$out .=  '<textarea required name="message" class="form-control" id="ticket-message" rows="10">'.dol_htmlentities($object->message).'</textarea>';
+			$out .=  '</div>';
+			
+			if (!empty($conf->global->FCKEDITOR_ENABLE_TICKET)){
+				$out .= '<script>CKEDITOR.replace( "message" );</script>';
+			}
+		
+			$out .=  '<div class="form-btn-action-container">';
+				if($object->id > 0 ){
+					$out .=  '<button type="submit" class="btn btn-success btn-strong pull-right" name="action" value="save" >'.$langs->transnoentities('TicketBtnSubmitSave').'</button>';
+				}
+				else{
+					$out .=  '<button type="submit" class="btn btn-success btn-strong pull-right" name="action" value="savecreate"  >'.$langs->transnoentities('TicketBtnSubmitCreate').'</button>';
+				}
+			$out .= '</div>';
+		$out .=	'</div>';
+	$out .=	'</form>';
+	
 	print $out;
 }
 
@@ -335,6 +399,8 @@ function print_ticketCard_view($ticketId = 0, $socId = 0, $action = '')
 						<div class="col-md-8">'.$object->track_id.'</div>
 					</div>
 	 */
+	$extrafields = new ExtraFields($db);
+	$tickets = $extrafields->fetch_name_optionals_label('ticket');
 
 	$out.= '
 		<div class="container px-0">
@@ -368,14 +434,21 @@ function print_ticketCard_view($ticketId = 0, $socId = 0, $action = '')
 					<div class="row clearfix form-group" id="InitialMessage">
 						<div class="col-md-4">'.$langs->transnoentities('InitialMessage').'</div>
 						<div class="col-md-8">'.$object->message.'</div>
-					</div>
+					</div>';
+					foreach ($tickets as $key=>$label){
+						$out.= '<div class="row clearfix form-group" id="InitialMessage">';
+						$out.= '<div class="col-md-4">'.$label.'</div>';
+						$out.= '<div class="col-md-8">'.$extrafields->showOutputField($key, $object->array_options['options_'.$key]).'</div>';
+						$out.= '</div>';
+					}				
+	$out.= '
 				</div>
 			</div>
 		</div>';
 
 	// get list of messages for the ticket
 	$object->loadCacheMsgsTicket();
-	//var_dump($object->cache_msgs_ticket);
+	//var_dump($object->cache_msgs_ticket);exit;
 
 
 
