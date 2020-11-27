@@ -596,10 +596,10 @@ class Actionsexternalaccess
 
 	public function actionTicketCard($parameters, $object, $action, $hookmanager)
 	{
-		global $langs, $user, $conf;
+		global $langs, $user, $conf, $db;
 		$context = Context::getInstance();
 		$langs->loadLangs(array("companies", "other", "mails", "ticket", "externalticket@externalaccess"));
-
+		
 		dol_include_once('ticket/class/ticket.class.php');
 
 		$ticket = new Ticket($context->dbTool->db);
@@ -607,9 +607,9 @@ class Actionsexternalaccess
 		if($ticketId > 0) {
 			$res = $ticket->fetch($ticketId);
 			$context->fetchedTicket = $ticket;
-			if($object->id != $user->socid){
-				return null;
-			}
+			//if($object->id != $user->socid){
+			//	return null;
+			//}
 		}
 		// DO ACTIONS
 
@@ -686,8 +686,7 @@ class Actionsexternalaccess
 					// Leave status as is
 				}
 
-				$ret = $ticket->createTicketMessage($user, 0, $listofpaths, $listofmimes, $listofnames);
-
+				$ret = $ticket->createTicketMessage($user, 0, $listofpaths, $listofmimes, $listofnames); 
 				if ($ret > 0) {
 					header('Location: '.$context->getRootUrl('ticket_card', '&id='.$ticket->id.'#lastcomment'));
 					exit();
@@ -703,12 +702,16 @@ class Actionsexternalaccess
 		{
 
 			if(checkUserTicketRight($user, $ticket, 'create')){
-
-				// Check
+				
+				dol_include_once('core/class/extrafields.class.php');
+				$extrafields = new ExtraFields($db);
+				$extrafields->fetch_name_optionals_label('ticket');			
 				$errors = 0;
 
 				$ticket->message = GETPOST('message', 'none');
 				$ticket->subject = GETPOST('subject', 'none');
+				$ticket->type_code = GETPOST('type_code');
+				$ticket->severity_code = GETPOST('severity_code');			
 				$ticket->fk_soc = $user->socid;
 
 				if(empty($ticket->message)){
@@ -720,18 +723,30 @@ class Actionsexternalaccess
 					$errors ++;
 					$context->setEventMessages($langs->trans('SubjectIsEmpty'), 'errors');
 				}
+								 
+				if(empty($ticket->type_code)){
+					$errors ++;
+					$context->setEventMessages($langs->trans('error1'), 'errors');
+				}
+				
+				if(empty($ticket->severity_code)){
+					$errors ++;
+					$context->setEventMessages($langs->trans('error2'), 'errors');
+				}
 
 				if(empty($ticket->fk_soc)){
 					$errors ++;
 					$context->setEventMessages($langs->trans('SocIsEmpty'), 'errors');
 				}
+				
+				$ret = $extrafields->setOptionalsFromPost(null, $ticket);
+				if ($ret < 0) $errors++;
 
 				if(empty($errors)){
 					$ticket->ref = $ticket->getDefaultRef();
 					$ticket->datec = time();
 
 					$res = $ticket->create($user);
-
 					if($res>0)
 					{
 						header('Location: '.$context->getRootUrl('ticket_card', '&id='.$res));
