@@ -137,13 +137,7 @@ function print_ticketCard_form($ticketId = 0, $socId = 0, $action = '')
 
 		
 
-<<<<<<< HEAD
-	$out .= '<div class="form-group">
-				<label for="ticket-type-code">'.$langs->transnoentities('TicketTypeCode').'</label>';
-	$out .=  $formticket->selectTypesTickets($object->type_code, 'ticket-type-code', '', 2, 1, 1, 0, 'form-control');
-	$out .=  '<small id="ticket-subject-help" class="form-text text-muted">'.$langs->transnoentities('TicketSubjectHelp').'</small>
-			</div>';
-=======
+
 		$out .= '<div class="form-ticket-message-container" >';
 		
 			//Sujet libre
@@ -152,10 +146,7 @@ function print_ticketCard_form($ticketId = 0, $socId = 0, $action = '')
 				$out .=	'<input required type="text" name="subject" class="form-control" id="ticket-subject" aria-describedby="ticket-subject-help" placeholder="'.$langs->transnoentities('TicketSubjectHere').'" maxlength="200">';
 				$out .=	'<small id="ticket-subject-help" class="form-text text-muted">'.$langs->transnoentities('TicketSubjectHelp').'</small>';
 			$out .=	'</div>';
->>>>>>> refs/remotes/origin/master
-
-
-			//Type de tickets - menu déroulant
+		//Type de tickets - menu dï¿½roulant
 			$sql = 'SELECT code, label  ';
 			$sql.= ' FROM `'.MAIN_DB_PREFIX.'c_ticket_type`';
 			$sql.= ' WHERE active = "1"';
@@ -172,7 +163,7 @@ function print_ticketCard_form($ticketId = 0, $socId = 0, $action = '')
 				$out .= '</div>';
 			}
 			
-			//Sévérité - Menu déroulant
+			//Sï¿½vï¿½ritï¿½ - Menu dï¿½roulant
 			$sql = 'SELECT code, label  ';
 			$sql.= ' FROM `'.MAIN_DB_PREFIX.'c_ticket_severity`';
 			$sql.= ' WHERE active = "1"';
@@ -189,7 +180,7 @@ function print_ticketCard_form($ticketId = 0, $socId = 0, $action = '')
 				$out .= '</div>';
 			}	
 
-			//Extrafield concernantles tickets à récupérer avec menu déroulant: véhicule, Atelier, Daté début, date fin
+			//Extrafield concernantles tickets ï¿½ rï¿½cupï¿½rer avec menu dï¿½roulant: vï¿½hicule, Atelier, Datï¿½ dï¿½but, date fin
 			$extrafields = new ExtraFields($db);
 			$tickets = $extrafields->fetch_name_optionals_label('ticket');
 			foreach ($tickets as $key=>$label){				
