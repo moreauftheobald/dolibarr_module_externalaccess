@@ -1,5 +1,6 @@
 <?php
-/* <one line to give the program's name and a brief idea of what it does.>
+/*
+ * <one line to give the program's name and a brief idea of what it does.>
  * Copyright (C) 2015 ATM Consulting <support@atm-consulting.fr>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -9,384 +10,334 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 include_once __DIR__ . '/ticket.lib.php';
 
 /**
- *	\file		lib/externalaccess.lib.php
- *	\ingroup	externalaccess
- *	\brief		This file is an example module library
- *				Put some comments here
+ * \file lib/externalaccess.lib.php
+ * \ingroup externalaccess
+ * \brief This file is an example module library
+ * Put some comments here
  */
-
-function externalaccessAdminPrepareHead()
-{
+function externalaccessAdminPrepareHead() {
     global $langs, $conf;
-
-    $langs->load("externalaccess@externalaccess");
-
+    
+    $langs->load ( "externalaccess@externalaccess" );
+    
     $h = 0;
-    $head = array();
-
-    $head[$h][0] = dol_buildpath("/externalaccess/admin/externalaccess_setup.php", 1);
-    $head[$h][1] = $langs->trans("Parameters");
-    $head[$h][2] = 'settings';
-    $h++;
-    $head[$h][0] = dol_buildpath("/externalaccess/admin/externalaccess_about.php", 1);
-    $head[$h][1] = $langs->trans("About");
-    $head[$h][2] = 'about';
-    $h++;
-
-    /*$head[$h][0] = dol_buildpath("/externalaccess/", 1);
-    $head[$h][1] = $langs->trans("AccessPortail");
-    $head[$h][2] = 'about';
-    $h++;*/
-
+    $head = array ();
+    
+    $head [$h] [0] = dol_buildpath ( "/externalaccess/admin/externalaccess_setup.php", 1 );
+    $head [$h] [1] = $langs->trans ( "Parameters" );
+    $head [$h] [2] = 'settings';
+    $h ++;
+    $head [$h] [0] = dol_buildpath ( "/externalaccess/admin/externalaccess_about.php", 1 );
+    $head [$h] [1] = $langs->trans ( "About" );
+    $head [$h] [2] = 'about';
+    $h ++;
+    
+    /*
+     * $head[$h][0] = dol_buildpath("/externalaccess/", 1);
+     * $head[$h][1] = $langs->trans("AccessPortail");
+     * $head[$h][2] = 'about';
+     * $h++;
+     */
+    
     // Show more tabs from modules
     // Entries must be declared in modules descriptor with line
-    //$this->tabs = array(
-    //	'entity:+tabname:Title:@externalaccess:/externalaccess/mypage.php?id=__ID__'
-    //); // to add new tab
-    //$this->tabs = array(
-    //	'entity:-tabname:Title:@externalaccess:/externalaccess/mypage.php?id=__ID__'
-    //); // to remove a tab
-    complete_head_from_modules($conf, $langs, $object, $head, $h, 'externalaccess');
-
-    return $head;
+    // $this->tabs = array(
+    // 'entity:+tabname:Title:@externalaccess:/externalaccess/mypage.php?id=__ID__'
+    // ); // to add new tab
+    // $this->tabs = array(
+    // 'entity:-tabname:Title:@externalaccess:/externalaccess/mypage.php?id=__ID__'
+        // ); // to remove a tab
+        complete_head_from_modules ( $conf, $langs, $object, $head, $h, 'externalaccess' );
+        
+        return $head;
 }
-
-function downloadFile($filename, $forceDownload = 0)
-{
+function downloadFile($filename, $forceDownload = 0) {
     global $langs;
-    if(!empty($filename) && file_exists($filename))
-    {
-        if(is_readable($filename) && is_file ( $filename ))
-        {
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mime = finfo_file($finfo, $filename);
-            if($mime == 'application/pdf' && empty($forceDownload))
-            {
-                header('Content-type: application/pdf');
-                header('Content-Disposition: inline; filename="' . basename($filename) . '"');
-                header('Content-Transfer-Encoding: binary');
-                header('Accept-Ranges: bytes');
-                header('Content-Length: ' . filesize($filename));
-                echo file_get_contents($filename);
-                exit();
+    if (! empty ( $filename ) && file_exists ( $filename )) {
+        if (is_readable ( $filename ) && is_file ( $filename )) {
+            $finfo = finfo_open ( FILEINFO_MIME_TYPE );
+            $mime = finfo_file ( $finfo, $filename );
+            if ($mime == 'application/pdf' && empty ( $forceDownload )) {
+                header ( 'Content-type: application/pdf' );
+                header ( 'Content-Disposition: inline; filename="' . basename ( $filename ) . '"' );
+                header ( 'Content-Transfer-Encoding: binary' );
+                header ( 'Accept-Ranges: bytes' );
+                header ( 'Content-Length: ' . filesize ( $filename ) );
+                echo file_get_contents ( $filename );
+                exit ();
+            } else {
+                
+                header ( "Content-Description: File Transfer" );
+                header ( "Content-Type: application/octet-stream" );
+                header ( 'Content-Disposition: attachment; filename="' . basename ( $filename ) . '"' );
+                header ( 'Content-Length: ' . filesize ( $filename ) );
+                
+                readfile ( $filename );
+                exit ();
             }
-            else {
-
-                header("Content-Description: File Transfer");
-                header("Content-Type: application/octet-stream");
-                header('Content-Disposition: attachment; filename="' . basename($filename) . '"');
-                header('Content-Length: ' . filesize($filename));
-
-                readfile ($filename);
-                exit();
-            }
+        } else {
+            print $langs->trans ( 'FileNotReadable' );
         }
-        else
-        {
-            print $langs->trans('FileNotReadable');
-        }
-
-    }
-    else
-    {
-        print $langs->trans('FileNotExists');
+    } else {
+        print $langs->trans ( 'FileNotExists' );
     }
 }
-
-
-function print_invoiceTable($socId = 0)
-{
+function print_invoiceTable($socId = 0) {
     global $langs, $db, $conf;
-    $context = Context::getInstance();
-
-    dol_include_once('compta/facture/class/facture.class.php');
-
-    $langs->load('factures');
-
-
+    $context = Context::getInstance ();
+    
+    dol_include_once ( 'compta/facture/class/facture.class.php' );
+    
+    $langs->load ( 'factures' );
+    
     $sql = 'SELECT rowid ';
-    $sql.= ' FROM `'.MAIN_DB_PREFIX.'facture` f';
-    $sql.= ' WHERE fk_soc = '. intval($socId);
-    $sql.= ' AND fk_statut > 0';
-    $sql.= ' AND entity IN ('.getEntity("invoice").')'; //Compatibility with Multicompany
-    $sql.= ' ORDER BY f.datef DESC';
-
-    $tableItems = $context->dbTool->executeS($sql);
-
-    if(!empty($tableItems))
-    {
+    $sql .= ' FROM `' . MAIN_DB_PREFIX . 'facture` f';
+    $sql .= ' WHERE fk_soc = ' . intval ( $socId );
+    $sql .= ' AND fk_statut > 0';
+    $sql .= ' AND entity IN (' . getEntity ( "invoice" ) . ')'; // Compatibility with Multicompany
+    $sql .= ' ORDER BY f.datef DESC';
+    
+    $tableItems = $context->dbTool->executeS ( $sql );
+    
+    if (! empty ( $tableItems )) {
         print '<table id="invoice-list" class="table table-striped" >';
         print '<thead>';
         print '<tr>';
-        print ' <th class="text-center" >'.$langs->trans('Ref').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('Date').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('DatePayLimit').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('Status').'</th>';
-        if(!empty($conf->global->EACCESS_ACTIVATE_INVOICES_HT_COL)){
-            print ' <th class="text-center" >'.$langs->trans('Amount_HT').'</th>';
+        print ' <th class="text-center" >' . $langs->trans ( 'Ref' ) . '</th>';
+        print ' <th class="text-center" >' . $langs->trans ( 'Date' ) . '</th>';
+        print ' <th class="text-center" >' . $langs->trans ( 'DatePayLimit' ) . '</th>';
+        print ' <th class="text-center" >' . $langs->trans ( 'Status' ) . '</th>';
+        if (! empty ( $conf->global->EACCESS_ACTIVATE_INVOICES_HT_COL )) {
+            print ' <th class="text-center" >' . $langs->trans ( 'Amount_HT' ) . '</th>';
         }
-        print ' <th class="text-center" >'.$langs->trans('Amount_TTC').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('RemainderToPay').'</th>';
+        print ' <th class="text-center" >' . $langs->trans ( 'Amount_TTC' ) . '</th>';
+        print ' <th class="text-center" >' . $langs->trans ( 'RemainderToPay' ) . '</th>';
         print ' <th class="text-center" ></th>';
         print '</tr>';
-
+        
         print '</thead>';
-
+        
         print '<tbody>';
-        foreach ($tableItems as $item)
-        {
-            $object = new Facture($db);
-            $object->fetch($item->rowid);
-	    load_last_main_doc($object);
-            $dowloadUrl = $context->getRootUrl().'script/interface.php?action=downloadInvoice&id='.$object->id;
-            //var_dump($object); exit;
-            $totalpaye = $object->getSommePaiement();
-            $totalcreditnotes = $object->getSumCreditNotesUsed();
-            $totaldeposits = $object->getSumDepositsUsed();
-            $resteapayer = price2num($object->total_ttc - $totalpaye - $totalcreditnotes - $totaldeposits, 'MT');
-
-            if(!empty($object->last_main_doc)){
-                $viewLink = '<a href="'.$dowloadUrl.'" target="_blank" >'.$object->ref.'</a>';
-                $downloadLink = '<a class="btn btn-xs btn-primary btn-strong" href="'.$dowloadUrl.'&amp;forcedownload=1" target="_blank" ><i class="fa fa-download"></i> '.$langs->trans('Download').'</a>';
-            }
-            else{
+        foreach ( $tableItems as $item ) {
+            $object = new Facture ( $db );
+            $object->fetch ( $item->rowid );
+            load_last_main_doc ( $object );
+            $dowloadUrl = $context->getRootUrl () . 'script/interface.php?action=downloadInvoice&id=' . $object->id;
+            // var_dump($object); exit;
+            $totalpaye = $object->getSommePaiement ();
+            $totalcreditnotes = $object->getSumCreditNotesUsed ();
+            $totaldeposits = $object->getSumDepositsUsed ();
+            $resteapayer = price2num ( $object->total_ttc - $totalpaye - $totalcreditnotes - $totaldeposits, 'MT' );
+            
+            if (! empty ( $object->last_main_doc )) {
+                $viewLink = '<a href="' . $dowloadUrl . '" target="_blank" >' . $object->ref . '</a>';
+                $downloadLink = '<a class="btn btn-xs btn-primary btn-strong" href="' . $dowloadUrl . '&amp;forcedownload=1" target="_blank" ><i class="fa fa-download"></i> ' . $langs->trans ( 'Download' ) . '</a>';
+            } else {
                 $viewLink = $object->ref;
-                $downloadLink =  $langs->trans('DocumentFileNotAvailable');
+                $downloadLink = $langs->trans ( 'DocumentFileNotAvailable' );
             }
-
-
+            
             print '<tr >';
-            print ' <td data-search="'.$object->ref.'" data-order="'.$object->ref.'" >'.$viewLink.'</td>';
-            print ' <td data-order="'.$object->date.'" data-search="'.dol_print_date($object->date).'"  >'.dol_print_date($object->date).'</td>';
-            print ' <td data-order="'.$object->date_lim_reglement.'"  >'.dol_print_date($object->date_lim_reglement).'</td>';
-            print ' <td  >'.$object->getLibStatut(0).'</td>';
-
-            if(!empty($conf->global->EACCESS_ACTIVATE_INVOICES_HT_COL)){
-                print ' <td data-order="'.$object->multicurrency_total_ht.'" class="text-right" >'.price($object->multicurrency_total_ht)  .' '.$object->multicurrency_code.'</td>';
+            print ' <td data-search="' . $object->ref . '" data-order="' . $object->ref . '" >' . $viewLink . '</td>';
+            print ' <td data-order="' . $object->date . '" data-search="' . dol_print_date ( $object->date ) . '"  >' . dol_print_date ( $object->date ) . '</td>';
+            print ' <td data-order="' . $object->date_lim_reglement . '"  >' . dol_print_date ( $object->date_lim_reglement ) . '</td>';
+            print ' <td  >' . $object->getLibStatut ( 0 ) . '</td>';
+            
+            if (! empty ( $conf->global->EACCESS_ACTIVATE_INVOICES_HT_COL )) {
+                print ' <td data-order="' . $object->multicurrency_total_ht . '" class="text-right" >' . price ( $object->multicurrency_total_ht ) . ' ' . $object->multicurrency_code . '</td>';
             }
-            print ' <td data-order="'.$object->multicurrency_total_ttc.'" class="text-right" >'.price($object->multicurrency_total_ttc)  .' '.$object->multicurrency_code.'</td>';
-            print ' <td data-order="'.$resteapayer.'" class="text-right" >'.price($resteapayer)  .' '.$object->multicurrency_code.'</td>';
-            print ' <td  class="text-right" >'.$downloadLink.'</td>';
+            print ' <td data-order="' . $object->multicurrency_total_ttc . '" class="text-right" >' . price ( $object->multicurrency_total_ttc ) . ' ' . $object->multicurrency_code . '</td>';
+            print ' <td data-order="' . $resteapayer . '" class="text-right" >' . price ( $resteapayer ) . ' ' . $object->multicurrency_code . '</td>';
+            print ' <td  class="text-right" >' . $downloadLink . '</td>';
             print '</tr>';
-
         }
         print '</tbody>';
-
+        
         print '</table>';
-        $jsonUrl = $context->getRootUrl().'script/interface.php?action=getInvoicesList';
-    ?>
-    <script type="text/javascript" >
-     $(document).ready(function(){
-         $("#invoice-list").DataTable({
-             "language": {
-                 "url": "<?php print $context->getRootUrl(); ?>vendor/data-tables/french.json"
-             },
-
-             responsive: true,
-             columnDefs: [{
-                 orderable: false,
-                 "aTargets": [-1]
-             },{
-                 "bSearchable": false,
-                 "aTargets": [-1, -2]
-             }]
-         });
-     });
-    </script>
-    <?php
-    }
-    else {
-        print '<div class="info clearboth text-center" >';
-        print  $langs->trans('EACCESS_Nothing');
-        print '</div>';
-    }
-
-
-
-}
-
-function print_projetsTable($socId = 1)
-{
-    global $langs,$db;
-    $context = Context::getInstance();
-
-    //dol_include_once('compta/facture/class/facture.class.php');
-    dol_include_once('projet/class/project.class.php');
-    $langs->load('projet');
-
-
-    $sql = 'SELECT rowid ';
-    $sql.= ' FROM `'.MAIN_DB_PREFIX.'projet` projet';
-    $sql.= ' WHERE fk_soc = '. intval($socId);
-    $sql.= ' AND fk_statut > 0';
-    $sql.= ' ORDER BY projet.datec DESC';
-
-    $tableItems = $context->dbTool->executeS($sql);
-
-    if(!empty($tableItems))
-    {
-        print '<table id="projet-list" class="table table-striped" >';
-        print '<thead>';
-        print '<tr>';
-        print ' <th class="text-center" >'.$langs->trans('Ref').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('Date').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('DatePayLimit').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('Status').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('Budget').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('Titre').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('Description').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('Lien de telechargement').'</th>';
-        print '</tr>';
-        print '</thead>';
-        print '<tbody>';
-        foreach ($tableItems as $item)
-        {
-            $object = new project($db);
-            $object->fetch($item->rowid);
-        	load_last_main_doc($object);
-            $dowloadUrl = $context->getRootUrl().'script/interface.php?action=downloadprojet&id='.$object->id;
-
-            if(!empty($object->last_main_doc)){
-                $viewLink = '<a href="'.$dowloadUrl.'" target="_blank" >'.$object->ref.'</a>';
-                $downloadLink = '<a class="btn btn-xs btn-primary" href="'.$dowloadUrl.'&amp;forcedownload=1" target="_blank" ><i class="fa fa-download"></i> '.$langs->trans('Download').'</a>';
-            }
-            else{
-                $viewLink = $object->ref;
-                $downloadLink =  $langs->trans('DocumentFileNotAvailable');
-            }
-            print '<tr >';
-            print ' <td data-search="'.$object->ref.'" data-order="'.$object->ref.'" >'.$viewLink.'</td>';
-            print ' <td data-search="'.$object->dateo.'" data-order="'.dol_print_date($object->dateo).'"  >'.dol_print_date($object->dateo).'</td>';
-            print ' <td data-search="'.$object->datec.'" data-order="'.dol_print_date($object->datec).'"  >'.dol_print_date($object->datec).'</td>';
-            print ' <td  >'.$object->getLibStatut(0).'</td>';
-            print ' <td data-search="'.$object->title.'" data-order="'.$object->title.'" ></td>';
-            print '<td  ></td>';
-            print '<td  ></td>';
-            print ' <td  class="text-right" >'.$downloadLink.'</td>';
-            print '</tr>';
-
-        }
-        print '</tbody>';
-
-        print '</table>';
-        $jsonUrl = $context->getRootUrl().'script/interface.php?action=getprojetList';
-    ?>
-    <script type="text/javascript" >
-     $(document).ready(function(){
-         $("#invoice-list").DataTable({
-             "language": {
-                 "url": "<?php print $context->getRootUrl(); ?>vendor/data-tables/french.json"
-             },
-
-             responsive: true,
-             columnDefs: [{
-                 orderable: false,
-                 "aTargets": [-1]
-             },{
-                 "bSearchable": false,
-                 "aTargets": [-1, -2]
-             }]
-         });
-     });
-    </script>
-    <?php
-    }
-    else {
-        print '<div class="info clearboth text-center" >';
-        print  $langs->trans('EACCESS_Nothing');
-        print '</div>';
-    }
-
-
-
-}
-
-function print_propalTable($socId = 0)
-{
-    global $langs,$db;
-    $context = Context::getInstance();
-
-    dol_include_once('comm/propal/class/propal.class.php');
-
-
-
-    $sql = 'SELECT rowid ';
-    $sql.= ' FROM `'.MAIN_DB_PREFIX.'propal` p';
-    $sql.= ' WHERE fk_soc = '. intval($socId);
-    $sql.= ' AND fk_statut > 0';
-    $sql.= ' AND entity IN ('.getEntity("propal").')';//Compatibility with Multicompany
-    $sql.= ' ORDER BY p.datep DESC';
-
-    $tableItems = $context->dbTool->executeS($sql);
-
-    if(!empty($tableItems))
-    {
-
-
-
-
-        print '<table id="propal-list" class="table table-striped" >';
-
-        print '<thead>';
-
-        print '<tr>';
-        print ' <th class="text-center" >'.$langs->trans('Ref').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('Date').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('EndValidDate').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('Status').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('Amount_HT').'</th>';
-        print ' <th class="text-center" ></th>';
-        print '</tr>';
-
-        print '</thead>';
-
-        print '<tbody>';
-        foreach ($tableItems as $item)
-        {
-            $object = new Propal($db);
-            $object->fetch($item->rowid);
-	    load_last_main_doc($object);
-            $downloadUrl = $context->getRootUrl().'script/interface.php?action=downloadPropal&id='.$object->id;
-
-
-            if(!empty($object->last_main_doc)){
-                $viewLink = '<a href="'.$downloadUrl.'" target="_blank" >'.$object->ref.'</a>';
-                $downloadLink = '<a class="btn btn-xs btn-primary btn-strong" href="'.$downloadUrl.'&amp;forcedownload=1" target="_blank" ><i class="fa fa-download"></i> '.$langs->trans('Download').'</a>';
-            }
-            else{
-                $viewLink = $object->ref;
-                $downloadLink =  $langs->trans('DocumentFileNotAvailable');
-            }
-
-            print '<tr>';
-            print ' <td data-search="'.$object->ref.'" data-order="'.$object->ref.'"  >'.$viewLink.'</td>';
-            print ' <td data-search="'.dol_print_date($object->date).'" data-order="'.$object->date.'" >'.dol_print_date($object->date).'</td>';
-            print ' <td data-search="'.dol_print_date($object->fin_validite).'" data-order="'.$object->fin_validite.'" >'.dol_print_date($object->fin_validite).'</td>';
-            print ' <td class="text-center" >'.$object->getLibStatut(0).'</td>';
-            print ' <td data-order="'.$object->multicurrency_total_ht.'" class="text-right" >'.price($object->multicurrency_total_ht)  .' '.$object->multicurrency_code.'</td>';
-
-
-            print ' <td  class="text-right" >'.$downloadLink.'</td>';
-
-
-            print '</tr>';
-
-        }
-        print '</tbody>';
-
-        print '</table>';
+        $jsonUrl = $context->getRootUrl () . 'script/interface.php?action=getInvoicesList';
         ?>
-    <script type="text/javascript" >
+<script type="text/javascript">
+     $(document).ready(function(){
+         $("#invoice-list").DataTable({
+             "language": {
+                 "url": "<?php print $context->getRootUrl(); ?>vendor/data-tables/french.json"
+             },
+
+             responsive: true,
+             columnDefs: [{
+                 orderable: false,
+                 "aTargets": [-1]
+             },{
+                 "bSearchable": false,
+                 "aTargets": [-1, -2]
+             }]
+         });
+     });
+    </script>
+<?php
+	} else {
+		print '<div class="info clearboth text-center" >';
+		print $langs->trans ( 'EACCESS_Nothing' );
+		print '</div>';
+	}
+}
+function print_projetsTable($socId = 1) {
+	global $langs, $db;
+	$context = Context::getInstance ();
+	
+	// dol_include_once('compta/facture/class/facture.class.php');
+	dol_include_once ( 'projet/class/project.class.php' );
+	$langs->load ( 'projet' );
+	
+	$sql = 'SELECT rowid ';
+	$sql .= ' FROM `' . MAIN_DB_PREFIX . 'projet` projet';
+	$sql .= ' WHERE fk_soc = ' . intval ( $socId );
+	$sql .= ' AND fk_statut > 0';
+	$sql .= ' ORDER BY projet.datec DESC';
+	
+	$tableItems = $context->dbTool->executeS ( $sql );
+	
+	if (! empty ( $tableItems )) {
+		print '<table id="projet-list" class="table table-striped" >';
+		print '<thead>';
+		print '<tr>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Ref' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Date' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'DatePayLimit' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Status' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Budget' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Titre' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Description' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Lien de telechargement' ) . '</th>';
+		print '</tr>';
+		print '</thead>';
+		print '<tbody>';
+		foreach ( $tableItems as $item ) {
+			$object = new project ( $db );
+			$object->fetch ( $item->rowid );
+			load_last_main_doc ( $object );
+			$dowloadUrl = $context->getRootUrl () . 'script/interface.php?action=downloadprojet&id=' . $object->id;
+			
+			if (! empty ( $object->last_main_doc )) {
+				$viewLink = '<a href="' . $dowloadUrl . '" target="_blank" >' . $object->ref . '</a>';
+				$downloadLink = '<a class="btn btn-xs btn-primary" href="' . $dowloadUrl . '&amp;forcedownload=1" target="_blank" ><i class="fa fa-download"></i> ' . $langs->trans ( 'Download' ) . '</a>';
+			} else {
+				$viewLink = $object->ref;
+				$downloadLink = $langs->trans ( 'DocumentFileNotAvailable' );
+			}
+			print '<tr >';
+			print ' <td data-search="' . $object->ref . '" data-order="' . $object->ref . '" >' . $viewLink . '</td>';
+			print ' <td data-search="' . $object->dateo . '" data-order="' . dol_print_date ( $object->dateo ) . '"  >' . dol_print_date ( $object->dateo ) . '</td>';
+			print ' <td data-search="' . $object->datec . '" data-order="' . dol_print_date ( $object->datec ) . '"  >' . dol_print_date ( $object->datec ) . '</td>';
+			print ' <td  >' . $object->getLibStatut ( 0 ) . '</td>';
+			print ' <td data-search="' . $object->title . '" data-order="' . $object->title . '" ></td>';
+			print '<td  ></td>';
+			print '<td  ></td>';
+			print ' <td  class="text-right" >' . $downloadLink . '</td>';
+			print '</tr>';
+		}
+		print '</tbody>';
+		
+		print '</table>';
+		$jsonUrl = $context->getRootUrl () . 'script/interface.php?action=getprojetList';
+		?>
+<script type="text/javascript">
+     $(document).ready(function(){
+         $("#invoice-list").DataTable({
+             "language": {
+                 "url": "<?php print $context->getRootUrl(); ?>vendor/data-tables/french.json"
+             },
+
+             responsive: true,
+             columnDefs: [{
+                 orderable: false,
+                 "aTargets": [-1]
+             },{
+                 "bSearchable": false,
+                 "aTargets": [-1, -2]
+             }]
+         });
+     });
+    </script>
+<?php
+	} else {
+		print '<div class="info clearboth text-center" >';
+		print $langs->trans ( 'EACCESS_Nothing' );
+		print '</div>';
+	}
+}
+function print_propalTable($socId = 0) {
+	global $langs, $db;
+	$context = Context::getInstance ();
+	
+	dol_include_once ( 'comm/propal/class/propal.class.php' );
+	
+	$sql = 'SELECT rowid ';
+	$sql .= ' FROM `' . MAIN_DB_PREFIX . 'propal` p';
+	$sql .= ' WHERE fk_soc = ' . intval ( $socId );
+	$sql .= ' AND fk_statut > 0';
+	$sql .= ' AND entity IN (' . getEntity ( "propal" ) . ')'; // Compatibility with Multicompany
+	$sql .= ' ORDER BY p.datep DESC';
+	
+	$tableItems = $context->dbTool->executeS ( $sql );
+	
+	if (! empty ( $tableItems )) {
+		
+		print '<table id="propal-list" class="table table-striped" >';
+		
+		print '<thead>';
+		
+		print '<tr>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Ref' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Date' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'EndValidDate' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Status' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Amount_HT' ) . '</th>';
+		print ' <th class="text-center" ></th>';
+		print '</tr>';
+		
+		print '</thead>';
+		
+		print '<tbody>';
+		foreach ( $tableItems as $item ) {
+			$object = new Propal ( $db );
+			$object->fetch ( $item->rowid );
+			load_last_main_doc ( $object );
+			$downloadUrl = $context->getRootUrl () . 'script/interface.php?action=downloadPropal&id=' . $object->id;
+			
+			if (! empty ( $object->last_main_doc )) {
+				$viewLink = '<a href="' . $downloadUrl . '" target="_blank" >' . $object->ref . '</a>';
+				$downloadLink = '<a class="btn btn-xs btn-primary btn-strong" href="' . $downloadUrl . '&amp;forcedownload=1" target="_blank" ><i class="fa fa-download"></i> ' . $langs->trans ( 'Download' ) . '</a>';
+			} else {
+				$viewLink = $object->ref;
+				$downloadLink = $langs->trans ( 'DocumentFileNotAvailable' );
+			}
+			
+			print '<tr>';
+			print ' <td data-search="' . $object->ref . '" data-order="' . $object->ref . '"  >' . $viewLink . '</td>';
+			print ' <td data-search="' . dol_print_date ( $object->date ) . '" data-order="' . $object->date . '" >' . dol_print_date ( $object->date ) . '</td>';
+			print ' <td data-search="' . dol_print_date ( $object->fin_validite ) . '" data-order="' . $object->fin_validite . '" >' . dol_print_date ( $object->fin_validite ) . '</td>';
+			print ' <td class="text-center" >' . $object->getLibStatut ( 0 ) . '</td>';
+			print ' <td data-order="' . $object->multicurrency_total_ht . '" class="text-right" >' . price ( $object->multicurrency_total_ht ) . ' ' . $object->multicurrency_code . '</td>';
+			
+			print ' <td  class="text-right" >' . $downloadLink . '</td>';
+			
+			print '</tr>';
+		}
+		print '</tbody>';
+		
+		print '</table>';
+		?>
+<script type="text/javascript">
      $(document).ready(function(){
          $("#propal-list").DataTable({
              "language": {
@@ -404,87 +355,75 @@ function print_propalTable($socId = 0)
          });
      });
     </script>
-    <?php
-    }
-    else {
-        print '<div class="info clearboth text-center" >';
-        print  $langs->trans('EACCESS_Nothing');
-        print '</div>';
-    }
-
-
-
+<?php
+	} else {
+		print '<div class="info clearboth text-center" >';
+		print $langs->trans ( 'EACCESS_Nothing' );
+		print '</div>';
+	}
 }
-
-function print_orderListTable($socId = 0)
-{
-    global $langs,$db;
-    $context = Context::getInstance();
-
-    dol_include_once('commande/class/commande.class.php');
-
-    $langs->load('orders');
-
-
-    $sql = 'SELECT rowid ';
-    $sql.= ' FROM `'.MAIN_DB_PREFIX.'commande` c';
-    $sql.= ' WHERE fk_soc = '. intval($socId);
-    $sql.= ' AND fk_statut > 0';
-    $sql.= ' AND entity IN ('.getEntity("order").')';//Compatibility with Multicompany
-    $sql.= ' ORDER BY c.date_commande DESC';
-
-    $tableItems = $context->dbTool->executeS($sql);
-
-    if(!empty($tableItems))
-    {
-
-        print '<table id="order-list" class="table table-striped" >';
-        print '<thead>';
-        print '<tr>';
-        print ' <th class="text-center" >'.$langs->trans('Ref').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('Date').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('DateLivraison').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('Status').'</th>';
-        print ' <th class="text-center" >'.$langs->trans('Amount_HT').'</th>';
-        print ' <th class="text-center" ></th>';
-        print '</tr>';
-
-        print '</thead>';
-
-        print '<tbody>';
-        foreach ($tableItems as $item)
-        {
-            $object = new Commande($db);
-            $object->fetch($item->rowid);
-	    load_last_main_doc($object);
-            $dowloadUrl = $context->getRootUrl().'script/interface.php?action=downloadCommande&id='.$object->id;
-
-            if(!empty($object->last_main_doc)){
-                $viewLink = '<a href="'.$dowloadUrl.'" target="_blank" >'.$object->ref.'</a>';
-                $downloadLink = '<a class="btn btn-xs btn-primary btn-strong" href="'.$dowloadUrl.'&amp;forcedownload=1" target="_blank" ><i class="fa fa-download"></i> '.$langs->trans('Download').'</a>';
-            }
-            else{
-                $viewLink = $object->ref;
-                $downloadLink =  $langs->trans('DocumentFileNotAvailable');
-            }
-
-            print '<tr>';
-            print ' <td data-search="'.$object->ref.'" data-order="'.$object->ref.'"  >'.$viewLink.'</td>';
-            print ' <td data-search="'.dol_print_date($object->date).'" data-order="'.$object->date.'" >'.dol_print_date($object->date).'</td>';
-            print ' <td data-search="'.dol_print_date($object->date_livraison).'" data-order="'.$object->date_livraison.'" >'.dol_print_date($object->date_livraison).'</td>';
-            print ' <td class="text-center" >'.$object->getLibStatut(0).'</td>';
-            print ' <td data-order="'.$object->multicurrency_total_ht.'"  class="text-right" >'.price($object->multicurrency_total_ht)  .' '.$object->multicurrency_code.'</td>';
-            print ' <td class="text-right" >'.$downloadLink.'</td>';
-
-
-            print '</tr>';
-
-        }
-        print '</tbody>';
-
-        print '</table>';
-        ?>
-        <script type="text/javascript" >
+function print_orderListTable($socId = 0) {
+	global $langs, $db;
+	$context = Context::getInstance ();
+	
+	dol_include_once ( 'commande/class/commande.class.php' );
+	
+	$langs->load ( 'orders' );
+	
+	$sql = 'SELECT rowid ';
+	$sql .= ' FROM `' . MAIN_DB_PREFIX . 'commande` c';
+	$sql .= ' WHERE fk_soc = ' . intval ( $socId );
+	$sql .= ' AND fk_statut > 0';
+	$sql .= ' AND entity IN (' . getEntity ( "order" ) . ')'; // Compatibility with Multicompany
+	$sql .= ' ORDER BY c.date_commande DESC';
+	
+	$tableItems = $context->dbTool->executeS ( $sql );
+	
+	if (! empty ( $tableItems )) {
+		
+		print '<table id="order-list" class="table table-striped" >';
+		print '<thead>';
+		print '<tr>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Ref' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Date' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'DateLivraison' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Status' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Amount_HT' ) . '</th>';
+		print ' <th class="text-center" ></th>';
+		print '</tr>';
+		
+		print '</thead>';
+		
+		print '<tbody>';
+		foreach ( $tableItems as $item ) {
+			$object = new Commande ( $db );
+			$object->fetch ( $item->rowid );
+			load_last_main_doc ( $object );
+			$dowloadUrl = $context->getRootUrl () . 'script/interface.php?action=downloadCommande&id=' . $object->id;
+			
+			if (! empty ( $object->last_main_doc )) {
+				$viewLink = '<a href="' . $dowloadUrl . '" target="_blank" >' . $object->ref . '</a>';
+				$downloadLink = '<a class="btn btn-xs btn-primary btn-strong" href="' . $dowloadUrl . '&amp;forcedownload=1" target="_blank" ><i class="fa fa-download"></i> ' . $langs->trans ( 'Download' ) . '</a>';
+			} else {
+				$viewLink = $object->ref;
+				$downloadLink = $langs->trans ( 'DocumentFileNotAvailable' );
+			}
+			
+			print '<tr>';
+			print ' <td data-search="' . $object->ref . '" data-order="' . $object->ref . '"  >' . $viewLink . '</td>';
+			print ' <td data-search="' . dol_print_date ( $object->date ) . '" data-order="' . $object->date . '" >' . dol_print_date ( $object->date ) . '</td>';
+			print ' <td data-search="' . dol_print_date ( $object->date_livraison ) . '" data-order="' . $object->date_livraison . '" >' . dol_print_date ( $object->date_livraison ) . '</td>';
+			print ' <td class="text-center" >' . $object->getLibStatut ( 0 ) . '</td>';
+			print ' <td data-order="' . $object->multicurrency_total_ht . '"  class="text-right" >' . price ( $object->multicurrency_total_ht ) . ' ' . $object->multicurrency_code . '</td>';
+			print ' <td class="text-right" >' . $downloadLink . '</td>';
+			
+			print '</tr>';
+		}
+		print '</tbody>';
+		
+		print '</table>';
+		?>
+<script type="text/javascript">
          $(document).ready(function(){
              $("#order-list").DataTable({
                  "language": {
@@ -504,97 +443,83 @@ function print_orderListTable($socId = 0)
              });
          });
         </script>
-        <?php
-    }
-    else {
-        print '<div class="info clearboth text-center" >';
-        print  $langs->trans('EACCESS_Nothing');
-        print '</div>';
-    }
-
-
-
-
+<?php
+	} else {
+		print '<div class="info clearboth text-center" >';
+		print $langs->trans ( 'EACCESS_Nothing' );
+		print '</div>';
+	}
 }
-
-
-function print_expeditionTable($socId = 0)
-{
-	global $langs,$db;
-	$context = Context::getInstance();
-
+function print_expeditionTable($socId = 0) {
+	global $langs, $db;
+	$context = Context::getInstance ();
+	
 	include_once DOL_DOCUMENT_ROOT . '/expedition/class/expedition.class.php';
 	include_once DOL_DOCUMENT_ROOT . '/core/lib/pdf.lib.php';
-
-	$langs->load('sendings');
-
+	
+	$langs->load ( 'sendings' );
+	
 	$sql = 'SELECT rowid ';
-	$sql.= ' FROM `'.MAIN_DB_PREFIX.'expedition` ';
-	$sql.= ' WHERE fk_soc = '. intval($socId);
-	$sql.= ' AND fk_statut > 0';
-    	$sql.= ' AND entity IN ('.getEntity("expedition").')';//Compatibility with Multicompany
-	$sql.= ' ORDER BY date_expedition DESC';
-
-	$tableItems = $context->dbTool->executeS($sql);
-
-	if(!empty($tableItems))
-	{
+	$sql .= ' FROM `' . MAIN_DB_PREFIX . 'expedition` ';
+	$sql .= ' WHERE fk_soc = ' . intval ( $socId );
+	$sql .= ' AND fk_statut > 0';
+	$sql .= ' AND entity IN (' . getEntity ( "expedition" ) . ')'; // Compatibility with Multicompany
+	$sql .= ' ORDER BY date_expedition DESC';
+	
+	$tableItems = $context->dbTool->executeS ( $sql );
+	
+	if (! empty ( $tableItems )) {
 		print '<table id="expedition-list" class="table table-striped" >';
 		print '<thead>';
 		print '<tr>';
-		print ' <th class="text-center" >'.$langs->trans('Ref').'</th>';
-		print ' <th class="text-center" >'.$langs->trans('pdfLinkedDocuments').'</th>';
-		print ' <th class="text-center" >'.$langs->trans('DateLivraison').'</th>';
-		print ' <th class="text-center" >'.$langs->trans('Status').'</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Ref' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'pdfLinkedDocuments' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'DateLivraison' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Status' ) . '</th>';
 		print ' <th class="text-center" ></th>';
 		print '</tr>';
 		print '</thead>';
 		print '<tbody>';
-		foreach ($tableItems as $item)
-		{
-			$object = new Expedition($db);
-			$object->fetch($item->rowid);
-			load_last_main_doc($object);
-			$dowloadUrl = $context->getRootUrl().'script/interface.php?action=downloadExpedition&id='.$object->id;
-
-			if(!empty($object->last_main_doc)){
-				$viewLink = '<a href="'.$dowloadUrl.'" target="_blank" >'.$object->ref.'</a>';
-				$downloadLink = '<a class="btn btn-xs btn-primary btn-strong" href="'.$dowloadUrl.'&amp;forcedownload=1" target="_blank" ><i class="fa fa-download"></i> '.$langs->trans('Download').'</a>';
-			}
-			else{
+		foreach ( $tableItems as $item ) {
+			$object = new Expedition ( $db );
+			$object->fetch ( $item->rowid );
+			load_last_main_doc ( $object );
+			$dowloadUrl = $context->getRootUrl () . 'script/interface.php?action=downloadExpedition&id=' . $object->id;
+			
+			if (! empty ( $object->last_main_doc )) {
+				$viewLink = '<a href="' . $dowloadUrl . '" target="_blank" >' . $object->ref . '</a>';
+				$downloadLink = '<a class="btn btn-xs btn-primary btn-strong" href="' . $dowloadUrl . '&amp;forcedownload=1" target="_blank" ><i class="fa fa-download"></i> ' . $langs->trans ( 'Download' ) . '</a>';
+			} else {
 				$viewLink = $object->ref;
-				$downloadLink =  $langs->trans('DocumentFileNotAvailable');
+				$downloadLink = $langs->trans ( 'DocumentFileNotAvailable' );
 			}
-
+			
 			$reftoshow = '';
 			$reftosearch = '';
-			$linkedobjects = pdf_getLinkedObjects($object,$langs);
-			if (! empty($linkedobjects))
-			{
-				foreach($linkedobjects as $linkedobject)
-				{
-				    if(!empty($reftoshow)){
-						$reftoshow.= ', ';
-						$reftosearch.= ' ';
-                    }
-					$reftoshow.= $linkedobject["ref_value"]; //$linkedobject["ref_title"].' : '.
-					$reftosearch.= $linkedobject["ref_value"];
+			$linkedobjects = pdf_getLinkedObjects ( $object, $langs );
+			if (! empty ( $linkedobjects )) {
+				foreach ( $linkedobjects as $linkedobject ) {
+					if (! empty ( $reftoshow )) {
+						$reftoshow .= ', ';
+						$reftosearch .= ' ';
+					}
+					$reftoshow .= $linkedobject ["ref_value"]; // $linkedobject["ref_title"].' : '.
+					$reftosearch .= $linkedobject ["ref_value"];
 				}
 			}
 			print '<tr>';
-			print ' <td data-search="'.$object->ref.'" data-order="'.$object->ref.'"  >'.$viewLink.'</td>';
-			print ' <td data-search="'.$reftosearch.'" data-order="'.$reftosearch.'"  >'.$reftoshow.'</td>';
-			print ' <td data-search="'.dol_print_date($object->date_delivery).'" data-order="'.$object->date_delivery.'" >'.dol_print_date($object->date_delivery).'</td>';
-			print ' <td class="text-center" >'.$object->getLibStatut(0).'</td>';
-			print ' <td class="text-right" >'.$downloadLink.'</td>';
+			print ' <td data-search="' . $object->ref . '" data-order="' . $object->ref . '"  >' . $viewLink . '</td>';
+			print ' <td data-search="' . $reftosearch . '" data-order="' . $reftosearch . '"  >' . $reftoshow . '</td>';
+			print ' <td data-search="' . dol_print_date ( $object->date_delivery ) . '" data-order="' . $object->date_delivery . '" >' . dol_print_date ( $object->date_delivery ) . '</td>';
+			print ' <td class="text-center" >' . $object->getLibStatut ( 0 ) . '</td>';
+			print ' <td class="text-right" >' . $downloadLink . '</td>';
 			print '</tr>';
-
 		}
 		print '</tbody>';
-
+		
 		print '</table>';
 		?>
-        <script type="text/javascript" >
+<script type="text/javascript">
             $(document).ready(function(){
                 $("#expedition-list").DataTable({
                     "language": {
@@ -614,117 +539,110 @@ function print_expeditionTable($socId = 0)
                 });
             });
         </script>
-		<?php
-	}
-	else {
+<?php
+	} else {
 		print '<div class="info clearboth text-center" >';
-		print  $langs->trans('EACCESS_Nothing');
+		print $langs->trans ( 'EACCESS_Nothing' );
 		print '</div>';
 	}
 }
-
-function print_orTable($socId = 0)
-{
-	global $langs,$db,$conf;
-	$context = Context::getInstance();
+function print_orTable($socId = 0) {
+	global $langs, $db, $conf;
+	$context = Context::getInstance ();
 	
 	include_once DOL_DOCUMENT_ROOT . '/custom/operationorder/class/operationorder.class.php';
 	include_once DOL_DOCUMENT_ROOT . '/core/lib/pdf.lib.php';
 	
-	$allowedstatus = array();
-	$allowedstatus = json_decode($conf->global->EACCESS_OR_STATUT_DISP);
-		$filterstatut='';
-		foreach ($allowedstatus as $statut){
-			$filterstatut .= "'".$statut."',";
-		}
-		$filterstatut=substr($filterstatut,0,-1);
-		
-	$allowedtypes = array();
-	$allowedtypes = json_decode($conf->global->EACCESS_OR_TYPE_DISP);
-		$filtertype='';
-		foreach ($allowedtypes as $type){
-			$filtertype .= $type.',';
-		}
-		$filtertype=substr($filtertype,0,-1);
-		
-	$langs->load('sendings');
-		
-	$sql = 'SELECT o.rowid as id, t.label as type, o.last_main_doc as last_main_doc, o.ref as ref, v.immatriculation as immatriculation, ';
-	$sql .= 'o.date_creation as date_creation, (IF(o.total_ht_part IS NOT NULL, o.total_ht_part, 0)+IF(o.total_ht_mo IS NOT NULL, o.total_ht_mo, 0)+IF(o.total_ht_external IS NOT NULL, o.total_ht_external, 0)) as total_ht  , s.label as statut ';
-	$sql.= ' FROM `'.MAIN_DB_PREFIX.'operationorder` as o';
-	$sql.= ' INNER JOIN `'.MAIN_DB_PREFIX.'operationorder_status` as s ON s.rowid=o.status';
-	$sql.= ' INNER JOIN `'.MAIN_DB_PREFIX.'c_operationorder_type` as t ON t.rowid=o.fk_c_operationorder_type';
-	$sql.= ' INNER JOIN `'.MAIN_DB_PREFIX.'operationorder_extrafields` as es ON es.fk_object=o.rowid';
-	$sql.= ' INNER JOIN `'.MAIN_DB_PREFIX.'dolifleet_vehicule` as v ON v.rowid=es.fk_dolifleet_vehicule';
-	$sql.= ' WHERE o.fk_soc = '. intval($socId);
-	$sql.= ' AND s.code IN ('.$filterstatut.") ";
-	$sql.= ' AND fk_c_operationorder_type IN ('.$filtertype.") ";
-	$sql.= ' AND o.entity IN ('.getEntity("operationorder").')';//Compatibility with Multicompany
-	$sql.= ' ORDER BY o.date_creation DESC';
-	//print $sql;exit;
-	$resql=$db->query($sql);
+	$allowedstatus = array ();
+	$allowedstatus = json_decode ( $conf->global->EACCESS_OR_STATUT_DISP );
+	$filterstatut = '';
+	foreach ( $allowedstatus as $statut ) {
+		$filterstatut .= "'" . $statut . "',";
+	}
+	$filterstatut = substr ( $filterstatut, 0, - 1 );
 	
-	if(!empty($resql))
-	{		
-		print '<table id="operationorder-list" class="table table-striped" >';		
-		print '<thead>';		
+	$allowedtypes = array ();
+	$allowedtypes = json_decode ( $conf->global->EACCESS_OR_TYPE_DISP );
+	$filtertype = '';
+	foreach ( $allowedtypes as $type ) {
+		$filtertype .= $type . ',';
+	}
+	$filtertype = substr ( $filtertype, 0, - 1 );
+	
+	$langs->load ( 'sendings' );
+	
+	$sql = 'SELECT o.rowid as id, t.label as type, o.last_main_doc as last_main_doc, o.ref as ref, v.immatriculation as immatriculation, es.driver as driver, ';
+	$sql .= 'o.date_creation as date_creation, (IF(o.total_ht_part IS NOT NULL, o.total_ht_part, 0)+IF(o.total_ht_mo IS NOT NULL, o.total_ht_mo, 0)+IF(o.total_ht_external IS NOT NULL, o.total_ht_external, 0)) as total_ht  , s.label as statut ';
+	$sql .= ' FROM `' . MAIN_DB_PREFIX . 'operationorder` as o';
+	$sql .= ' INNER JOIN `' . MAIN_DB_PREFIX . 'operationorder_status` as s ON s.rowid=o.status';
+	$sql .= ' INNER JOIN `' . MAIN_DB_PREFIX . 'c_operationorder_type` as t ON t.rowid=o.fk_c_operationorder_type';
+	$sql .= ' INNER JOIN `' . MAIN_DB_PREFIX . 'operationorder_extrafields` as es ON es.fk_object=o.rowid';
+	$sql .= ' INNER JOIN `' . MAIN_DB_PREFIX . 'dolifleet_vehicule` as v ON v.rowid=es.fk_dolifleet_vehicule';
+	$sql .= ' WHERE o.fk_soc = ' . intval ( $socId );
+	$sql .= ' AND s.code IN (' . $filterstatut . ") ";
+	$sql .= ' AND fk_c_operationorder_type IN (' . $filtertype . ") ";
+	$sql .= ' AND o.entity IN (' . getEntity ( "operationorder" ) . ')'; // Compatibility with Multicompany
+	$sql .= ' ORDER BY o.date_creation DESC';
+	// print $sql;exit;
+	$resql = $db->query ( $sql );
+	
+	if (! empty ( $resql )) {
+		print '<table id="operationorder-list" class="table table-striped" >';
+		print '<thead>';
 		print '<tr>';
-		print ' <th class="text-center" >'.$langs->trans('Ref').'</th>';
-		print ' <th class="text-center" >'.$langs->trans('vehicule').'</th>';
-		print ' <th class="text-center" >'.$langs->trans('DateCreation').'</th>';
-		print ' <th class="text-center" >'.$langs->trans('montantHT').'</th>';
-		print ' <th class="text-center" >'.$langs->trans('Type').'</th>';
-		print ' <th class="text-center" >'.$langs->trans('Status').'</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Ref' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'vehicule' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Driver' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'DateCreation' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'montantHT' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Type' ) . '</th>';
+		print ' <th class="text-center" >' . $langs->trans ( 'Status' ) . '</th>';
 		print ' <th class="text-center" ></th>';
-		print '</tr>';		
-		print '</thead>';	
+		print '</tr>';
+		print '</thead>';
 		
 		print '<tbody>';
-		while ($object = $db->fetch_object($resql)){
-		$or=new OperationOrder ($db);
-		$or->fetch($object->id);
+		while ( $object = $db->fetch_object ( $resql ) ) {
+			$or = new OperationOrder ( $db );
+			$or->fetch ( $object->id );
+			load_last_main_doc ( $or );
+			$dowloadUrl = $context->getRootUrl () . 'script/interface.php?action=downloadOperationOrder&id=' . $object->id;
 			
-			//print_r ($object); exit;
-			load_last_main_doc($or);
-			$dowloadUrl = $context->getRootUrl().'script/interface.php?action=downloadOperationOrder&id='.$object->id;
-			
-			if(!empty($object->last_main_doc)){
-				$viewLink = '<a href="'.$dowloadUrl.'" target="_blank" >'.$object->ref.'</a>';
-				$downloadLink = '<a class="btn btn-xs btn-primary btn-strong" href="'.$dowloadUrl.'&amp;forcedownload=1" target="_blank" ><i class="fa fa-download"></i> '.$langs->trans('Download').'</a>';
-			}
-			else{
+			if (! empty ( $object->last_main_doc )) {
+				$viewLink = '<a href="' . $dowloadUrl . '" target="_blank" >' . $object->ref . '</a>';
+				$downloadLink = '<a class="btn btn-xs btn-primary btn-strong" href="' . $dowloadUrl . '&amp;forcedownload=1" target="_blank" ><i class="fa fa-download"></i> ' . $langs->trans ( 'Download' ) . '</a>';
+			} else {
 				$viewLink = $object->ref;
-				$downloadLink =  $langs->trans('DocumentFileNotAvailable');
-			}			
+				$downloadLink = $langs->trans ( 'DocumentFileNotAvailable' );
+			}
 			$reftoshow = '';
 			$reftosearch = '';
-			$linkedobjects = pdf_getLinkedObjects($or,$langs);
-			if (! empty($linkedobjects))
-			{
-				foreach($linkedobjects as $linkedobject)
-				{
-					if(!empty($reftoshow)){
-						$reftoshow.= ', ';
-						$reftosearch.= ' ';
+			$linkedobjects = pdf_getLinkedObjects ( $or, $langs );
+			if (! empty ( $linkedobjects )) {
+				foreach ( $linkedobjects as $linkedobject ) {
+					if (! empty ( $reftoshow )) {
+						$reftoshow .= ', ';
+						$reftosearch .= ' ';
 					}
-					$reftoshow.= $linkedobject["ref_value"]; //$linkedobject["ref_title"].' : '.
-					$reftosearch.= $linkedobject["ref_value"];
+					$reftoshow .= $linkedobject ["ref_value"]; // $linkedobject["ref_title"].' : '.
+					$reftosearch .= $linkedobject ["ref_value"];
 				}
-			}			
+			}
 			print '<tr>';
-			print ' <td data-search="'.$object->ref.'" data-order="'.$object->ref.'"  >'.$viewLink.'</td>';
-			print ' <td data-search="'.$object->immatriculation.'" data-order="'.$object->immatriculation.'"  >'.$object->immatriculation.'</td>';
-			print ' <td data-search="'.dol_print_date($object->date_creation).'" data-order="'.$object->date_creation.'" >'.dol_print_date($object->date_creation).'</td>';
-			print ' <td data-search="'.$object->total_ht.'" data-order="'.$object->total_ht.'"  class="text-right" >'.price($object->total_ht, 0, '', 1, 2, 2)  .' </td>';
-			print ' <td data-search="'.$object->type.'" data-order="'.$object->type.'"  >'.$object->type.'</td>';
-			print ' <td class="text-center" >'.$or->getLibStatut(0).'</td>';			
-			print ' <td class="text-right" >'.$downloadLink.'</td>';			
-			print '</tr>';			
+			print ' <td data-search="' . $object->ref . '" data-order="' . $object->ref . '"  >' . $viewLink . '</td>';
+			print ' <td data-search="' . $object->immatriculation . '" data-order="' . $object->immatriculation . '"  >' . $object->immatriculation . '</td>';
+			print ' <td data-search="' . $object->driver . '" data-order="' . $object->driver . '"  >' . $object->driver . '</td>';
+			print ' <td data-search="' . dol_print_date ( $object->date_creation ) . '" data-order="' . $object->date_creation . '" >' . dol_print_date ( $object->date_creation ) . '</td>';
+			print ' <td data-search="' . $object->total_ht . '" data-order="' . $object->total_ht . '"  class="text-right" >' . price ( $object->total_ht, 0, '', 1, 2, 2 ) . ' </td>';
+			print ' <td data-search="' . $object->type . '" data-order="' . $object->type . '"  >' . $object->type . '</td>';
+			print ' <td class="text-center" >' . $or->getLibStatut ( 0 ) . '</td>';
+			print ' <td class="text-right" >' . $downloadLink . '</td>';
+			print '</tr>';
 		}
 		print '</tbody>';
 		print '</table>';
 		?>
-        <script type="text/javascript" >
+<script type="text/javascript">
             $(document).ready(function(){
                 $("#operationorder-list").DataTable({
                     "language": {
@@ -741,15 +659,13 @@ function print_orTable($socId = 0)
                 });
             });
         </script>
-		<?php
-	}
-	else {
+<?php
+	} else {
 		print '<div class="info clearboth text-center" >';
-		print  $langs->trans('EACCESS_Nothing');
+		print $langs->trans ( 'EACCESS_Nothing' );
 		print '</div>';
 	}
 }
-
 function print_disponibilityListTable($socId = 0)
 {
 	global $langs,$db;
