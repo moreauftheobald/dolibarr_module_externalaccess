@@ -704,6 +704,15 @@ class Actionsexternalaccess
 			if(checkUserTicketRight($user, $ticket, 'create')){
 				
 				dol_include_once('core/class/extrafields.class.php');
+				$sql = "SELECT e.fk_user_ticket AS fk_user_ticket FROM " .MAIN_DB_PREFIX. "entity_extrafields AS e WHERE fk_object = " . GETPOST("options_fk_entity", "int");
+				$resql = $db->query($sql);
+				$obj=$db->fetch_object($resql);
+				
+				if(empty($obj->fk_user_ticket)){
+				    $error++;
+				    array_push($object->errors, $langs->trans("ErrorFieldRequired", $langs->transnoentities("pas de responsable trouvé")));
+				    $action = '';
+				}
 				$extrafields = new ExtraFields($db);
 				$extrafields->fetch_name_optionals_label('ticket');			
 				$errors = 0;
@@ -713,7 +722,10 @@ class Actionsexternalaccess
 				$ticket->type_code = GETPOST('type_code');
 				$ticket->severity_code = GETPOST('severity_code');			
 				$ticket->fk_soc = $user->socid;
-
+				$ticket->entity = GETPOST('options_fk_entity');
+				$ticket->fk_user_assign = $obj->fk_user_ticket;
+				
+				
 				if(empty($ticket->message)){
 					$errors ++;
 					$context->setEventMessages($langs->trans('MessageIsEmpty'), 'errors');
@@ -741,6 +753,23 @@ class Actionsexternalaccess
 				
 				$ret = $extrafields->setOptionalsFromPost(null, $ticket);
 				if ($ret < 0) $errors++;
+				
+// 				if(empty($_POST['options_date_d '])){
+// 				    $errors ++;
+// 				    $context->setEventMessages($langs->trans('datedebisempty'), 'errors');
+// 				}
+// 				if(empty($_POST['options_date_f '])){
+// 				    $errors ++;
+// 				    $context->setEventMessages($langs->trans('datefinisempty'), 'errors');
+// 				}
+// 				if(empty($_POST['options_fk_entity '])){
+// 				    $errors ++;
+// 				    $context->setEventMessages($langs->trans('atelierisempty'), 'errors');
+// 				}
+// 				if(empty($_POST['options_fk_vehicule '])){
+// 				    $errors ++;
+// 				    $context->setEventMessages($langs->trans('vehiculeisempty'), 'errors');
+// 				}
 
 				if(empty($errors)){
 					$ticket->ref = $ticket->getDefaultRef();

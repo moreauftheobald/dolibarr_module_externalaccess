@@ -35,3 +35,7 @@ AddFileToComment = Ajouter le fichier
 SendCommentOtherActions = choisir une autre action
 SortMessagesDesc = Trier les messages du dernier au premier
 SortMessagesAsc = Trier les messages du premier au dernier
+datedebisempty = Date de début de disponibilité vide
+datefinisempty = Date de fin de disponibilité vide
+atelierisempty = atelier de référence non spécifié
+vehiculeisempty = Véhicule non spécifié
